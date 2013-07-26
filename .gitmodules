@@ -25,3 +25,4 @@
 [submodule "Submodules/Pocket-ObjC-SDK"]
 	path = Submodules/Pocket-ObjC-SDK
 	url = git://github.com/Pocket/Pocket-ObjC-SDK.git
+    ignore = dirty
