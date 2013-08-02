@@ -259,7 +259,7 @@ static char const* const ListURIKey = "ListURIKey";
     } else {
         NSError *error = nil;
         NSDictionary *result = [NSJSONSerialization JSONObjectWithData:aRequest.data options:NSJSONReadingMutableContainers error:&error];
-        NSMutableArray *lists = [[NSMutableArray alloc] init];
+        NSMutableArray *lists = [[[NSMutableArray alloc] init] autorelease];
         for (NSDictionary *l in [result objectForKey:@"objects"]) {
             NSString *s = [l objectForKey:@"title"];
             s.listURI = [l objectForKey:@"resource_uri"];
