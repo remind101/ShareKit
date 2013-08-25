@@ -51,7 +51,12 @@
 
 + (SHKActionSheet *)actionSheetForItem:(SHKItem *)item withSharers:(NSArray *)sharers
 {
-    SHKActionSheet *as = [[SHKCONFIG(SHKActionSheetSubclass) alloc] initWithTitle:SHKLocalizedString(@"Share")
+	return [self actionSheetForItem:item actionSheetTitle:SHKLocalizedString(@"Share") withSharers:sharers];
+}
+
++ (SHKActionSheet *)actionSheetForItem:(SHKItem *)item actionSheetTitle:(NSString *)title withSharers:(NSArray *)sharers;
+{
+    SHKActionSheet *as = [[SHKCONFIG(SHKActionSheetSubclass) alloc] initWithTitle:title
                                                                          delegate:nil
                                                                 cancelButtonTitle:nil
                                                            destructiveButtonTitle:nil

@@ -38,5 +38,6 @@
 
 + (SHKActionSheet *)actionSheetForItem:(SHKItem *)item;
 + (SHKActionSheet *)actionSheetForItem:(SHKItem *)item withSharers:(NSArray *)sharers;
++ (SHKActionSheet *)actionSheetForItem:(SHKItem *)item actionSheetTitle:(NSString *)title withSharers:(NSArray *)sharers;
 
 @end
