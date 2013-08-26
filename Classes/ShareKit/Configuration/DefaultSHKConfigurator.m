@@ -528,6 +528,10 @@
 	return nil;
 }
 
+- (NSArray *)mailBCCRecipients {
+    return nil;
+}
+
 - (NSNumber*)isMailHTML {
     return [NSNumber numberWithInt:1];
 }

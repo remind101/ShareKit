@@ -37,22 +37,22 @@
 
 + (NSString *)sharerTitle
 {
-	return SHKLocalizedString(@"Email");
+    return SHKLocalizedString(@"Email");
 }
 
 + (BOOL)canShareText
 {
-	return YES;
+    return YES;
 }
 
 + (BOOL)canShareURL
 {
-	return YES;
+    return YES;
 }
 
 + (BOOL)canShareImage
 {
-	return YES;
+    return YES;
 }
 
 + (BOOL)canShareVideo
@@ -74,12 +74,12 @@
 
 + (BOOL)shareRequiresInternetConnection
 {
-	return NO;
+    return NO;
 }
 
 + (BOOL)requiresAuthentication
 {
-	return NO;
+    return NO;
 }
 
 
@@ -88,12 +88,12 @@
 
 + (BOOL)canShare
 {
-	return [MFMailComposeViewController canSendMail];
+    return [MFMailComposeViewController canSendMail];
 }
 
 - (BOOL)shouldAutoShare
 {
-	return YES;
+    return YES;
 }
 
 #pragma mark -
@@ -101,105 +101,104 @@
 
 - (BOOL)send
 {
-	self.quiet = YES;
-	
-	if (![self validateItem])
-		return NO;
-	
-	return [self sendMail]; // Put the actual sending action in another method to make subclassing SHKMail easier
+    self.quiet = YES;
+    
+    if (![self validateItem])
+        return NO;
+    
+    return [self sendMail]; // Put the actual sending action in another method to make subclassing SHKMail easier
 }
 
 - (BOOL)sendMail
-{	
-	MFMailComposeViewController *mailController = [[[MFMailComposeViewController alloc] init] autorelease];
-	if (!mailController) {
-		// e.g. no mail account registered (will show alert)
-		[[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
-		return YES;
-	}
-	
-    [self retain]; //must retain, because mailController does not retain its delegates. Released in callback.
-	mailController.mailComposeDelegate = self;
-	mailController.navigationBar.tintColor = SHKCONFIG_WITH_ARGUMENT(barTintForView:,mailController);
-	
-	NSString *body = self.item.text ? self.item.text : @"";
-	BOOL isHTML = self.item.isMailHTML;
-    NSString *separator = (isHTML ? @"<br/><br/>" : @"\n\n");
-		
-		if (self.item.URL != nil)
-		{
-			NSString *urlStr = [self.item.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-			
-            if ([body length] > 0) {
-                body = [body stringByAppendingFormat:@"%@%@", separator, urlStr];
-            } else {
-                body = [body stringByAppendingFormat:@"%@", urlStr];
-            }
-		}
-		
-		if (self.item.file)
-		{
-			NSString *attachedStr = SHKLocalizedString(@"Attached: %@", self.item.title ? self.item.title : self.item.file.filename);
-			
-            if ([body length] > 0) {
-                body = [body stringByAppendingFormat:@"%@%@", separator, attachedStr];
-            } else {
-                body = [body stringByAppendingFormat:@"%@", attachedStr];
-            }
-            		}
-		
-		// fallback
-		if (body == nil)
-			body = @"";
-		
-		// sig
-		if (self.item.mailShareWithAppSignature)
-		{
-			body = [body stringByAppendingString:separator];
-			body = [body stringByAppendingString:SHKLocalizedString(@"Sent from %@", SHKCONFIG(appName))];
-		}
-	
-	if (self.item.file)
-		[mailController addAttachmentData:self.item.file.data mimeType:self.item.file.mimeType fileName:self.item.file.filename];
-	
-	NSArray *toRecipients = self.item.mailToRecipients;
-    if (toRecipients)
-		[mailController setToRecipients:toRecipients];
+{    
+    MFMailComposeViewController *mailController = [[[MFMailComposeViewController alloc] init] autorelease];
+    if (!mailController) {
+        // e.g. no mail account registered (will show alert)
+        [[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
+        return YES;
+    }
     
-	if (self.item.image){
+    [self retain]; //must retain, because mailController does not retain its delegates. Released in callback.
+    mailController.mailComposeDelegate = self;
+    mailController.navigationBar.tintColor = SHKCONFIG_WITH_ARGUMENT(barTintForView:,mailController);
+    
+    NSString *body = self.item.text ? self.item.text : @"";
+    BOOL isHTML = self.item.isMailHTML;
+    NSString *separator = (isHTML ? @"<br/><br/>" : @"\n\n");
+        
+    if (self.item.URL != nil)
+    {
+        NSString *urlStr = [self.item.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        
+        if ([body length] > 0) {
+            body = [body stringByAppendingFormat:@"%@%@", separator, urlStr];
+        } else {
+            body = [body stringByAppendingFormat:@"%@", urlStr];
+        }
+    }
+    
+    if (self.item.file)
+    {
+        NSString *attachedStr = SHKLocalizedString(@"Attached: %@", self.item.title ? self.item.title : self.item.file.filename);
+        
+        if ([body length] > 0) {
+            body = [body stringByAppendingFormat:@"%@%@", separator, attachedStr];
+        } else {
+            body = [body stringByAppendingFormat:@"%@", attachedStr];
+        }
+    }
+    
+    // fallback
+    if (body == nil)
+        body = @"";
+    
+    // sig
+    if (self.item.mailShareWithAppSignature)
+    {
+        body = [body stringByAppendingString:separator];
+        body = [body stringByAppendingString:SHKLocalizedString(@"Sent from %@", SHKCONFIG(appName))];
+    }
+    
+    if (self.item.file) [mailController addAttachmentData:self.item.file.data mimeType:self.item.file.mimeType fileName:self.item.file.filename];
+    
+    if (self.item.mailToRecipients) [mailController setToRecipients:self.item.mailToRecipients];
+    
+    if (self.item.mailBCCRecipients) [mailController setBccRecipients:self.item.mailBCCRecipients];
+    
+    if (self.item.image){
         
         CGFloat jpgQuality = self.item.mailJPGQuality;
         [mailController addAttachmentData:UIImageJPEGRepresentation(self.item.image, jpgQuality) mimeType:@"image/jpeg" fileName:@"Image.jpg"];
-	}
-	
-	[mailController setSubject:self.item.title];
-	[mailController setMessageBody:body isHTML:isHTML];
-			
-	[[SHK currentHelper] showViewController:mailController];
-	
-	return YES;
+    }
+    
+    [mailController setSubject:self.item.title];
+    [mailController setMessageBody:body isHTML:isHTML];
+            
+    [[SHK currentHelper] showViewController:mailController];
+    
+    return YES;
 }
 
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error
 {
-	[[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
-	
-	switch (result) 
-	{
-		case MFMailComposeResultSent:
-			[self sendDidFinish];
-			break;
-		case MFMailComposeResultSaved:
-			[self sendDidFinish];
-			break;
-		case MFMailComposeResultCancelled:
-			[self sendDidCancel];
-			break;
-		case MFMailComposeResultFailed:
-			[self sendDidFailWithError:nil];
-			break;
-	}
-	[self autorelease];
+    [[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
+    
+    switch (result) 
+    {
+        case MFMailComposeResultSent:
+            [self sendDidFinish];
+            break;
+        case MFMailComposeResultSaved:
+            [self sendDidFinish];
+            break;
+        case MFMailComposeResultCancelled:
+            [self sendDidCancel];
+            break;
+        case MFMailComposeResultFailed:
+            [self sendDidFailWithError:nil];
+            break;
+    }
+    [self autorelease];
 }
 
 
