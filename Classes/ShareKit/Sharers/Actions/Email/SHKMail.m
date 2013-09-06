@@ -110,20 +110,20 @@
 }
 
 - (BOOL)sendMail
-{    
-    MFMailComposeViewController *mailController = [[[MFMailComposeViewController alloc] init] autorelease];
-    if (!mailController) {
-        // e.g. no mail account registered (will show alert)
-        [[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
-        return YES;
-    }
-    
-    [self retain]; //must retain, because mailController does not retain its delegates. Released in callback.
-    mailController.mailComposeDelegate = self;
-    mailController.navigationBar.tintColor = SHKCONFIG_WITH_ARGUMENT(barTintForView:,mailController);
-    
-    NSString *body = self.item.text ? self.item.text : @"";
-    BOOL isHTML = self.item.isMailHTML;
+{	
+	MFMailComposeViewController *mailController = [[MFMailComposeViewController alloc] init];
+	if (!mailController) {
+		// e.g. no mail account registered (will show alert)
+		[[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
+		return YES;
+	}
+	
+    [[SHK currentHelper] keepSharerReference:self]; //must retain, because mailController does not retain its delegates. Released in callback.
+	mailController.mailComposeDelegate = self;
+	mailController.navigationBar.tintColor = SHKCONFIG_WITH_ARGUMENT(barTintForView:,mailController);
+	
+	NSString *body = self.item.text ? self.item.text : @"";
+	BOOL isHTML = self.item.isMailHTML;
     NSString *separator = (isHTML ? @"<br/><br/>" : @"\n\n");
         
     if (self.item.URL != nil)
@@ -181,25 +181,24 @@
 
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error
 {
-    [[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
-    
-    switch (result) 
-    {
-        case MFMailComposeResultSent:
-            [self sendDidFinish];
-            break;
-        case MFMailComposeResultSaved:
-            [self sendDidFinish];
-            break;
-        case MFMailComposeResultCancelled:
-            [self sendDidCancel];
-            break;
-        case MFMailComposeResultFailed:
-            [self sendDidFailWithError:nil];
-            break;
-    }
-    [self autorelease];
+	[[SHK currentHelper] hideCurrentViewControllerAnimated:YES];
+	
+	switch (result) 
+	{
+		case MFMailComposeResultSent:
+			[self sendDidFinish];
+			break;
+		case MFMailComposeResultSaved:
+			[self sendDidFinish];
+			break;
+		case MFMailComposeResultCancelled:
+			[self sendDidCancel];
+			break;
+		case MFMailComposeResultFailed:
+			[self sendDidFailWithError:nil];
+			break;
+	}
+	[[SHK currentHelper] removeSharerReference:self];
 }
-
 
 @end

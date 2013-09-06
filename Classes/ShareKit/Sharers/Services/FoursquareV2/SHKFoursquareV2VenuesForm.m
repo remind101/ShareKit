@@ -27,7 +27,6 @@
 
 #import "SHKFoursquareV2VenuesForm.h"
 
-#import "SHKFoursquareV2CheckInForm.h"
 #import "SHKFoursquareV2Venue.h"
 
 #import "SHK.h"
@@ -36,30 +35,9 @@
 
 @implementation SHKFoursquareV2VenuesForm
 
-@synthesize delegate = _delegate;
-@synthesize request = _request;
-
-@synthesize locationManager = _locationManager;
-@synthesize location = _location;
-
-@synthesize query = _query;
-
-@synthesize venues = _venues;
-@synthesize filteredVenues = _filteredVenues;
-
 - (void)dealloc
 {
     [self stopMonitoringLocation];
-    
-    self.delegate = nil;
-    self.request = nil;
-    
-    self.query = nil;
-    
-    self.venues = nil;
-    self.filteredVenues = nil;
-    
-    [super dealloc];
 }
 
 - (id)initWithDelegate:(SHKFoursquareV2*)delegate
@@ -70,9 +48,9 @@
         
         self.delegate = delegate;
         
-		self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+		self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
 																							  target:self
-																							  action:@selector(cancel)] autorelease];
+																							  action:@selector(cancel)];
     }
     return self;
 }
@@ -91,7 +69,7 @@
 {
     [super loadView];
     
-    UISearchBar *searchBar = [[[UISearchBar alloc] init] autorelease];
+    UISearchBar *searchBar = [[UISearchBar alloc] init];
     searchBar.placeholder = SHKLocalizedString(@"Search places");
     [searchBar sizeToFit];
     searchBar.delegate = self;
@@ -190,7 +168,7 @@
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
     }
     
     // Configure the cell...
@@ -209,45 +187,6 @@
     
     return cell;
 }
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-    else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 #pragma mark - Table view delegate
 
@@ -303,7 +242,6 @@
     }
     
     self.locationManager = locationManager;
-    [locationManager release];
     
     if (self.location == nil) {
         [[SHKActivityIndicator currentIndicator] displayActivity:SHKLocalizedString(@"Determine your location...")];
@@ -334,47 +272,46 @@
 {
     [[SHKActivityIndicator currentIndicator] displayActivity:SHKLocalizedString(@"Searching places...")];
     
-    self.request = [SHKFoursquareV2Request requestVenuesSearchLocation:self.location query:self.query delegate:self isFinishedSelector:@selector(finishLoadingVenues:) accessToken:self.delegate.accessToken autostart:YES];
+    [SHKFoursquareV2Request startRequestVenuesSearchLocation:self.location
+                                                       query:self.query
+                                                 accessToken:self.delegate.accessToken
+                                                  completion:^ (SHKRequest *request) {
+                                                      
+                                                      [[SHKActivityIndicator currentIndicator] hide];
+                                                      
+                                                      self.venues = nil;
+                                                      
+                                                      SHKFoursquareV2Request *FSRequest = (SHKFoursquareV2Request *)request;
+                                                      
+                                                      if (request.success)
+                                                      {
+                                                          NSArray *responseVenues = [FSRequest.foursquareResponse objectForKey:@"venues"];
+                                                          
+                                                          NSMutableArray *venues = [NSMutableArray arrayWithCapacity:[responseVenues count]];
+                                                          
+                                                          for (NSUInteger i = 0; i < [responseVenues count]; ++i) {
+                                                              [venues addObject:[SHKFoursquareV2Venue venueFromDictionary:[responseVenues objectAtIndex:i]]];
+                                                          }
+                                                          
+                                                          if (self.searchDisplayController.active)
+                                                          {
+                                                              self.filteredVenues = venues;
+                                                              [self.searchDisplayController.searchResultsTableView reloadData];
+                                                          }
+                                                          else
+                                                          {
+                                                              self.venues = venues;
+                                                              [self.tableView reloadData];
+                                                          }
+                                                      }
+                                                      else
+                                                      {
+                                                          NSError *error = FSRequest.foursquareError;
+                                                          
+                                                          [self.delegate sendDidFailWithError:error shouldRelogin:error.foursquareRelogin];
+                                                      }
+                                                  }];
 }
-
-- (void)finishLoadingVenues:(SHKFoursquareV2Request*)sender
-{
-    [[SHKActivityIndicator currentIndicator] hide];
-    
-    self.venues = nil;
-    
-    if (sender.success)
-    {
-        NSArray *responseVenues = [sender.foursquareResponse objectForKey:@"venues"];
-        
-        NSMutableArray *venues = [NSMutableArray arrayWithCapacity:[responseVenues count]];
-        
-        for (NSUInteger i = 0; i < [responseVenues count]; ++i) {
-            [venues addObject:[SHKFoursquareV2Venue venueFromDictionary:[responseVenues objectAtIndex:i]]];
-        }
-        
-        if (self.searchDisplayController.active)
-        {
-            self.filteredVenues = venues;
-            [self.searchDisplayController.searchResultsTableView reloadData];
-        }
-        else
-        {
-            self.venues = venues;
-            [self.tableView reloadData];
-        }
-    }
-    else
-    {
-        NSError *error = sender.foursquareError;
-        
-        [self.delegate sendDidFailWithError:error shouldRelogin:error.foursquareRelogin];
-    }
-    
-    self.request = nil;
-    
-}
-
 
 #pragma mark -
 #pragma mark UISearchDisplayDelegate

@@ -99,7 +99,6 @@
 - (NSNumber*)showActionSheetMoreButton;
 - (NSNumber*)allowOffline;
 - (NSNumber*)allowAutoShare;
-- (Class)SHKActionSheetSubclass;
 - (Class)SHKShareMenuSubclass;
 - (Class)SHKShareMenuCellSubclass;
 - (Class)SHKFormControllerSubclass;
@@ -122,5 +121,7 @@
 -(NSString *)dropboxAppKey;
 -(NSString *)dropboxAppSecret;
 -(NSString *)dropboxRootFolder;
--(BOOL)dropboxShouldOverwriteExistedFile;
+-(NSNumber *)dropboxShouldOverwriteExistedFile;
+//SHKBuffer
+- (NSNumber *)bufferShouldShortenURLS;
 @end
