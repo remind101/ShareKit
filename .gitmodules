@@ -1,6 +1,7 @@
 [submodule "Submodules/facebook-ios-sdk"]
 	path = Submodules/facebook-ios-sdk
 	url = https://github.com/facebook/facebook-ios-sdk.git
+    ignore = dirty
 [submodule "Submodules/sskeychain"]
 	path = Submodules/sskeychain
 	url = https://github.com/samsoffes/sskeychain.git
@@ -19,13 +20,14 @@
 [submodule "Submodules/google-api-objectivec"]
 	path = Submodules/google-api-objectivec
 	url = git://github.com/jakemdunn/google-api-objectivec-client.git
+    ignore = dirty
 [submodule "Submodules/buffer-ios-sdk"]
 	path = Submodules/buffer-ios-sdk
 	url = git://github.com/bufferapp/buffer-ios-sdk.git
 [submodule "Submodules/Pocket-ObjC-SDK"]
 	path = Submodules/Pocket-ObjC-SDK
 	url = git://github.com/Pocket/Pocket-ObjC-SDK.git
+    ignore = dirty
 [submodule "Submodules/sstoolkit"]
 	path = Submodules/sstoolkit
 	url = https://github.com/soffes/sstoolkit.git
-    ignore = dirty
